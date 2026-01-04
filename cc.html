@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>麻將計數器</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-family: "Microsoft JhengHei", sans-serif;
+      background-color: #f5f5f5;
+    }
+
+    h1 {
+      font-size: 48px;
+      margin-bottom: 40px;
+    }
+
+    button {
+      font-size: 24px;
+      padding: 15px 40px;
+      border: none;
+      border-radius: 10px;
+      background-color: #4CAF50;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>麻將計數器</h1>
+  <button onclick="startGame()">開始</button>
+
+  <script>
+    function startGame() {
+      alert("開始遊戲！");
+      // 之後可以在這裡跳轉到計分頁面
+      // location.href = "game.html";
+    }
+  </script>
+
+</body>
+</html>
