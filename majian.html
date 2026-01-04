@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>麻將記台器</title>
+<style>
+body { font-family: Arial; background:#f5f5f5; padding:20px; }
+h1,h2 { margin-top:30px; }
+table { border-collapse: collapse; width:100%; background:white; }
+th, td { border:1px solid #ccc; padding:8px; text-align:center; }
+input, select, button { padding:5px; margin:4px; }
+</style>
+</head>
+<body>
+
+<h1>麻將記台器</h1>
+
+<h2>初始設定</h2>
+底（固定）：<input type="number" id="base" value="50"> 元<br>
+每台金額：<input type="number" id="taiMoney" value="10"> 元<br><br>
+
+玩家：
+<input id="p1" placeholder="玩家1">
+<input id="p2" placeholder="玩家2">
+<input id="p3" placeholder="玩家3">
+<input id="p4" placeholder="玩家4">
+<button onclick="initGame()">開始</button>
+
+<hr>
+
+<h2>記錄一局</h2>
+局數：<span id="round">1</span>
+風圈：
+<select id="wind">
+  <option>東</option>
+  <option>南</option>
+  <option>西</option>
+  <option>北</option>
+</select>
+
+<br><br>
+
+胡牌者：
+<select id="winner"></select>
+
+放槍者：
+<select id="loser"></select>
+
+<br><br>
+
+胡了幾台：
+<input type="number" id="tai" value="1">
+
+倍數：
+<select id="multi">
+  <option value="1">1 倍</option>
+  <option value="2">2 倍</option>
+  <option value="4">4 倍</option>
+</select>
+
+胡牌方式：
+<select id="type">
+  <option value="self">自摸</option>
+  <option value="shoot">放槍</option>
+</select>
+
+<br><br>
+
+<button onclick="record()">記錄本局</button>
+
+<hr>
+
+<h2>即時排名</h2>
+<table id="rank"></table>
+
+<h2>胡牌 / 自摸 / 放槍率（以總局數計）</h2>
+<table id="stats"></table>
+
+<script>
+let players = [];
+let records = [];
+let round = 1;
+let base = 0;
+let taiMoney = 0;
+
+function initGame(){
+  base = Number(document.getElementById("base").value);
+  taiMoney = Number(document.getElementById("taiMoney").value);
+
+  players = [
+    {name:p1.value, score:0, win:0, self:0, shoot:0},
+    {name:p2.value, score:0, win:0, self:0, shoot:0},
+    {name:p3.value, score:0, win:0, self:0, shoot:0},
+    {name:p4.value, score:0, win:0, self:0, shoot:0},
+  ];
+
+  winner.innerHTML = loser.innerHTML = "";
+  players.forEach((p,i)=>{
+    winner.innerHTML += `<option value="${i}">${p.name}</option>`;
+    loser.innerHTML += `<option value="${i}">${p.name}</option>`;
+  });
+
+  updateTables();
+}
+
+function record(){
+  let w = Number(winner.value);
+  let l = Number(loser.value);
+  let tai = Number(document.getElementById("tai").value);
+  let multi = Number(document.getElementById("multi").value);
+  let type = document.getElementById("type").value;
+
+  if(type === "shoot" && w === l){
+    alert("放槍者不能是胡牌者自己！");
+    return;
+  }
+
+  let money = (base + tai * taiMoney) * multi;
+
+  if(type === "self"){
+    players[w].score += money * 3;
+    players[w].win++;
+    players[w].self++;
+    players.forEach((p,i)=>{ if(i !== w) p.score -= money; });
+  } else {
+    players[w].score += money;
+    players[l].score -= money;
+    players[w].win++;
+    players[l].shoot++;
+  }
+
+  // 將紀錄存起來，但不顯示歷史表格
+  records.push({round, w, l, tai, multi, type, money});
+
+  round++;
+  document.getElementById("round").innerText = round;
+  updateTables();
+}
+
+function updateTables(){
+  let totalRounds = records.length;
+
+  // 排名表
+  let r = `<tr><th>排名</th><th>玩家</th><th>總金額</th></tr>`;
+  [...players].sort((a,b)=>b.score-a.score).forEach((p,i)=>{
+    r += `<tr><td>${i+1}</td><td>${p.name}</td><td>${p.score}</td></tr>`;
+  });
+  rank.innerHTML = r;
+
+  // 胡牌/自摸/放槍率
+  let s = `<tr><th>玩家</th><th>胡牌率</th><th>自摸率</th><th>放槍率</th></tr>`;
+  players.forEach(p=>{
+    s += `<tr>
+      <td>${p.name}</td>
+      <td>${totalRounds ? ((p.win/totalRounds)*100).toFixed(1) : 0}%</td>
+      <td>${totalRounds ? ((p.self/totalRounds)*100).toFixed(1) : 0}%</td>
+      <td>${totalRounds ? ((p.shoot/totalRounds)*100).toFixed(1) : 0}%</td>
+    </tr>`;
+  });
+  stats.innerHTML = s;
+}
+</script>
+
+</body>
+</html>
